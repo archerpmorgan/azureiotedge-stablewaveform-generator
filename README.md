@@ -1,2 +1,3 @@
-# azureiotedge-stablewaveform-generator
-This IoT Edge performs as a stand-in 
+# Simulated Wave Form Generator for IoT Edge
+
+
