@@ -14,28 +14,31 @@ namespace WaveFormGeneratorModule
     class Program
     {
         static int counter;
-        //private static volatile DesiredPropertiesData desiredPropertiesData;
+        private static volatile DesiredPropertiesData desiredPropertiesData;
 
 
 
 
 
 
-        static void Main(string[] args)
+
+
+
+        static async Task Main(string[] args)
         {
             // The Edge runtime gives us the connection string we need -- it is injected as an environment variable
-            string connectionString = Environment.GetEnvironmentVariable("EdgeHubConnectionString");
+            var connectionString = Environment.GetEnvironmentVariable("EdgeHubConnectionString");
 
             // Cert verification is not yet fully functional when using Windows OS for the container
-            bool bypassCertVerification = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            var bypassCertVerification = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             if (!bypassCertVerification) InstallCert();
-            Init(connectionString, bypassCertVerification).Wait();
+            await Init(connectionString, bypassCertVerification);
 
             // Wait until the app unloads or is cancelled
             var cts = new CancellationTokenSource();
             AssemblyLoadContext.Default.Unloading += (ctx) => cts.Cancel();
             Console.CancelKeyPress += (sender, cpe) => cts.Cancel();
-            WhenCancelled(cts.Token).Wait();
+            await WhenCancelled(cts.Token);
         }
 
 
@@ -116,6 +119,13 @@ namespace WaveFormGeneratorModule
             DeviceClient ioTHubModuleClient = DeviceClient.CreateFromConnectionString(connectionString, settings);
             await ioTHubModuleClient.OpenAsync();
             Console.WriteLine("IoT Hub module client initialized.");
+
+
+            var moduleTwin = await ioTHubModuleClient.GetTwinAsync();
+            var moduleTwinCollection = moduleTwin.Properties.Desired;
+            desiredPropertiesData = new DesiredPropertiesData(moduleTwinCollection);
+
+
 
             // Register callback to be called when a message is received by the module
             await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
