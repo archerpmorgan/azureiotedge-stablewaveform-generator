@@ -23,7 +23,7 @@ namespace AzureIotEdgeSimulatedWaveSensor
         // 1 - Sine
         // 2 - Square
         // 3 - SawTooth
-        // 1 - Triangle
+        // 4 - Triangle
         private int waveType;
 
         public WaveSensor(double freq, double amp, double vert, double delta, int type){
@@ -50,14 +50,12 @@ namespace AzureIotEdgeSimulatedWaveSensor
 
         //moves linearly from 0 to amplitude with a given period
         private double sawTooth(double x){
-            x = x % period;
             return (amplitude/period) * x + verticalShift;
         }
 
         // periodic triangular wave form, translated according to
         //object specifications
         private double triangle(double x){
-            x = x % period;
             if (x < period/4.0) {
                 return 4 * (amplitude/period) * x + verticalShift;
             }
@@ -94,7 +92,7 @@ namespace AzureIotEdgeSimulatedWaveSensor
                 default: break;
             }
 
-            cur += readDelta;
+            cur = (cur + readDelta) % period;
             return retval;
         }
     }

@@ -14,6 +14,12 @@ namespace WaveFormGeneratorModule
     class Program
     {
         static int counter;
+        //private static volatile DesiredPropertiesData desiredPropertiesData;
+
+
+
+
+
 
         static void Main(string[] args)
         {
@@ -32,6 +38,13 @@ namespace WaveFormGeneratorModule
             WhenCancelled(cts.Token).Wait();
         }
 
+
+
+
+
+
+
+
         /// <summary>
         /// Handles cleanup operations when app is cancelled or unloads
         /// </summary>
@@ -41,6 +54,14 @@ namespace WaveFormGeneratorModule
             cancellationToken.Register(s => ((TaskCompletionSource<bool>)s).SetResult(true), tcs);
             return tcs.Task;
         }
+
+
+
+
+
+
+
+
 
         /// <summary>
         /// Add certificate in local cert store for use by client for secure connection to IoT Edge runtime
@@ -68,6 +89,13 @@ namespace WaveFormGeneratorModule
         }
 
 
+
+
+
+
+
+
+
         /// <summary>
         /// Initializes the DeviceClient and sets up the callback to receive
         /// messages containing temperature information
@@ -92,6 +120,14 @@ namespace WaveFormGeneratorModule
             // Register callback to be called when a message is received by the module
             await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
         }
+
+
+
+
+
+
+
+
 
         /// <summary>
         /// This method is called whenever the module is sent a message from the EdgeHub. 
