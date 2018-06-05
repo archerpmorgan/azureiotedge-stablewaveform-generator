@@ -2,7 +2,7 @@ using System;
 
 namespace AzureIotEdgeSimulatedWaveSensor
 {
-    public class WaveSensor {
+    public class SimulatedWaveSensor {
 
         // Hypotrochoid – for simulating pumps/pistons
         // Sine – for frequency 
@@ -26,14 +26,26 @@ namespace AzureIotEdgeSimulatedWaveSensor
         // 4 - Triangle
         private int waveType;
 
-        public WaveSensor(double freq, double amp, double vert, double delta, int type){
+        public SimulatedWaveSensor(double freq, double amp, double vert, double delta, int type){
             this.frequency = freq;
             this.period = 1 / frequency;
             this.amplitude = amp;
             this.verticalShift = vert;
             this.readDelta = delta;
             this.waveType = type;
+
             this.cur = 0; 
+        }
+
+        public SimulatedWaveSensor(DesiredPropertiesData dpd){
+            this.frequency = dpd.Frequency;
+            this.period = 1 / frequency;
+            this.amplitude = dpd.Amplitude;
+            this.verticalShift = dpd.VerticalShift;
+            this.readDelta = dpd.SendInterval;
+            this.waveType = dpd.WaveType;
+            
+            this.cur = 0;
         }
 
         //sine function translated as per the parameters specified in the instatiation of the object
@@ -50,7 +62,7 @@ namespace AzureIotEdgeSimulatedWaveSensor
 
         //moves linearly from 0 to amplitude with a given period
         private double sawTooth(double x){
-            return (amplitude/period) * x + verticalShift;
+            return 2*(amplitude/period) * x - amplitude + verticalShift;
         }
 
         // periodic triangular wave form, translated according to
@@ -78,6 +90,12 @@ namespace AzureIotEdgeSimulatedWaveSensor
 
             // map wave transformations onto array of read times
             double retval = 0;
+
+
+
+            //some logic for artifact generation?
+
+
 
             switch (waveType)
             {

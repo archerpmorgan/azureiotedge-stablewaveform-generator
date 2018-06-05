@@ -12,9 +12,9 @@ namespace AzureIotEdgeSimulatedWaveSensor
         [TestMethod]
         public void TestSinWave()
         {
-            WaveSensor ws1 = new WaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 1);
-            WaveSensor ws2 = new WaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: .05, type: 1);
-            WaveSensor ws3 = new WaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 1);
+            SimulatedWaveSensor ws1 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 1);
+            SimulatedWaveSensor ws2 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: .05, type: 1);
+            SimulatedWaveSensor ws3 = new SimulatedWaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 1);
 
             double[] readBlock1 = new double[1000];
             double[] readBlock2 = new double[1000];
@@ -49,9 +49,9 @@ namespace AzureIotEdgeSimulatedWaveSensor
         [TestMethod]
         public void TestSquareWave()
         {
-            WaveSensor ws1 = new WaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 2);
-            WaveSensor ws2 = new WaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: .05, type: 2);
-            WaveSensor ws3 = new WaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 2);
+            SimulatedWaveSensor ws1 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 2);
+            SimulatedWaveSensor ws2 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: .05, type: 2);
+            SimulatedWaveSensor ws3 = new SimulatedWaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 2);
 
             double[] readBlock1 = new double[1000];
             double[] readBlock2 = new double[1000];
@@ -89,9 +89,9 @@ namespace AzureIotEdgeSimulatedWaveSensor
         [TestMethod]
         public void TestSawToothWave()
         {
-            WaveSensor ws1 = new WaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 3);
-            WaveSensor ws2 = new WaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: .01, type: 3);
-            WaveSensor ws3 = new WaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 3);
+            SimulatedWaveSensor ws1 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 3);
+            SimulatedWaveSensor ws2 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: .01, type: 3);
+            SimulatedWaveSensor ws3 = new SimulatedWaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 3);
 
             double[] readBlock1 = new double[1000];
             double[] readBlock2 = new double[1000];
@@ -128,9 +128,9 @@ namespace AzureIotEdgeSimulatedWaveSensor
         [TestMethod]
         public void TestTriangleWave()
         {
-            WaveSensor ws1 = new WaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 4);
-            WaveSensor ws2 = new WaveSensor(freq: .016, amp: 1, vert: 0, delta: .05, type: 4);
-            WaveSensor ws3 = new WaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 4);
+            SimulatedWaveSensor ws1 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 4);
+            SimulatedWaveSensor ws2 = new SimulatedWaveSensor(freq: .016, amp: 1, vert: 0, delta: .05, type: 4);
+            SimulatedWaveSensor ws3 = new SimulatedWaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 4);
 
             double[] readBlock1 = new double[1000];
             double[] readBlock2 = new double[1000];
