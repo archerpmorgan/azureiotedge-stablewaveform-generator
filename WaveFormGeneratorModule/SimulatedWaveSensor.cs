@@ -17,7 +17,6 @@ namespace AzureIotEdgeSimulatedWaveSensor
         private double amplitude {get; set;} //units unspecified
         private double verticalShift {get; set;}
         private double readDelta {get; set;} // time between successive reads
-        private double cur;
 
         // specifies which wave form is produced on read
         // 1 - Sine
@@ -26,13 +25,29 @@ namespace AzureIotEdgeSimulatedWaveSensor
         // 4 - Triangle
         private int waveType;
 
-        public SimulatedWaveSensor(double freq, double amp, double vert, double delta, int type){
+        //begin noise parameters
+        private bool isNoisy {get; set;}
+        private double start {get; set;}
+        private double duration {get; set;}
+        private double minNoiseBound {get; set;}
+        private double maxNoiseBound {get; set;}
+
+        private double cur;
+
+        private static readonly Random rnd = new Random();
+
+        public SimulatedWaveSensor(double freq, double amp, double vert, double delta, int type, bool isNoisy, double duration, double start, double min, double max){
             this.frequency = freq;
             this.period = 1 / frequency;
             this.amplitude = amp;
             this.verticalShift = vert;
             this.readDelta = delta;
             this.waveType = type;
+            this.isNoisy = isNoisy;
+            this.duration = duration;
+            this.start = start;
+            this.minNoiseBound = min;
+            this.maxNoiseBound = max;
 
             this.cur = 0; 
         }
@@ -44,7 +59,7 @@ namespace AzureIotEdgeSimulatedWaveSensor
             this.verticalShift = dpd.VerticalShift;
             this.readDelta = dpd.SendInterval;
             this.waveType = dpd.WaveType;
-            
+
             this.cur = 0;
         }
 
@@ -91,12 +106,6 @@ namespace AzureIotEdgeSimulatedWaveSensor
             // map wave transformations onto array of read times
             double retval = 0;
 
-
-
-            //some logic for artifact generation?
-
-
-
             switch (waveType)
             {
                 case 1:
@@ -108,6 +117,12 @@ namespace AzureIotEdgeSimulatedWaveSensor
                 case 4:
                     retval = triangle(cur); break;
                 default: break;
+            }
+
+            // if the configuration is set accordingly, add a uniform random number to value before
+            // reporting it
+            if (isNoisy && cur >= start && cur < start + duration) {
+                retval += minNoiseBound + rnd.NextDouble()*(maxNoiseBound - minNoiseBound);
             }
 
             cur = (cur + readDelta) % period;

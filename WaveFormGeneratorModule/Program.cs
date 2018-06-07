@@ -1,46 +1,68 @@
 namespace WaveFormGeneratorModule
 {
-    using System;
-    using System.IO;
-    using System.Runtime.InteropServices;
-    using System.Runtime.Loader;
-    using System.Security.Cryptography.X509Certificates;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client;
-    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Runtime.Loader;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
+using System.Net;
+using AzureIotEdgeSimulatedWaveSensor;
+
+// // disabling async warning as the SendSimulationData is an async method
+// // but we don't wait for it
+// #pragma warning disable CS4014
+
 
     class Program
     {
         static int counter;
         private static volatile DesiredPropertiesData desiredPropertiesData;
+        private static SimulatedWaveSensor simulatedWaveSensor;
 
 
 
+        // static async Task Main(string[] args)
+        // {
+        //     // The Edge runtime gives us the connection string we need -- it is injected as an environment variable
+        //     var connectionString = Environment.GetEnvironmentVariable("EdgeHubConnectionString");
 
+        //     // Cert verification is not yet fully functional when using Windows OS for the container
+        //     var bypassCertVerification = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        //     if (!bypassCertVerification) InstallCert();
+        //     await Init(connectionString, bypassCertVerification);
 
+        //     // Wait until the app unloads or is cancelled
+        //     var cts = new CancellationTokenSource();
+        //     AssemblyLoadContext.Default.Unloading += (ctx) => cts.Cancel();
+        //     Console.CancelKeyPress += (sender, cpe) => cts.Cancel();
+        //     await WhenCancelled(cts.Token);
+        // }
 
-
-
-
-        static async Task Main(string[] args)
+                static void Main(string[] args)
         {
             // The Edge runtime gives us the connection string we need -- it is injected as an environment variable
-            var connectionString = Environment.GetEnvironmentVariable("EdgeHubConnectionString");
+            string connectionString = Environment.GetEnvironmentVariable("EdgeHubConnectionString");
 
             // Cert verification is not yet fully functional when using Windows OS for the container
-            var bypassCertVerification = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            bool bypassCertVerification = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             if (!bypassCertVerification) InstallCert();
-            await Init(connectionString, bypassCertVerification);
+            Init(connectionString, bypassCertVerification).Wait();
 
             // Wait until the app unloads or is cancelled
             var cts = new CancellationTokenSource();
             AssemblyLoadContext.Default.Unloading += (ctx) => cts.Cancel();
             Console.CancelKeyPress += (sender, cpe) => cts.Cancel();
-            await WhenCancelled(cts.Token);
+            WhenCancelled(cts.Token).Wait();
         }
-
 
 
 
@@ -120,12 +142,13 @@ namespace WaveFormGeneratorModule
             await ioTHubModuleClient.OpenAsync();
             Console.WriteLine("IoT Hub module client initialized.");
 
-
             var moduleTwin = await ioTHubModuleClient.GetTwinAsync();
             var moduleTwinCollection = moduleTwin.Properties.Desired;
             desiredPropertiesData = new DesiredPropertiesData(moduleTwinCollection);
+            simulatedWaveSensor = new SimulatedWaveSensor(desiredPropertiesData);
 
-
+            // callback for updating desired properties through the portal or rest api
+            await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
 
             // Register callback to be called when a message is received by the module
             await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
@@ -169,6 +192,62 @@ namespace WaveFormGeneratorModule
                 Console.WriteLine("Received message sent");
             }
             return MessageResponse.Completed;
+        }
+
+
+
+
+        private static async Task SendSimulationData(DeviceClient deviceClient)
+        {
+            while(true)
+            {
+                try
+                {
+                    if(desiredPropertiesData.SendData)
+                    {
+                        double nextVal = simulatedWaveSensor.ReadNext();
+                        MessageBody mb = buildMessage(desiredPropertiesData, nextVal);
+                        var messageString = JsonConvert.SerializeObject(mb);
+                        var messageBytes = Encoding.UTF8.GetBytes(messageString);
+                        var message = new Message(messageBytes);
+                        message.ContentEncoding = "utf-8"; 
+                        message.ContentType = "application/json"; 
+
+                        await deviceClient.SendEventAsync("WaveFormOutput", message);
+                        Console.WriteLine($"\t{DateTime.UtcNow.ToShortDateString()} {DateTime.UtcNow.ToLongTimeString()}> Sending message: {counter}, Body: {messageString}");
+
+                    }
+                    await Task.Delay(TimeSpan.FromSeconds(desiredPropertiesData.SendInterval));
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine($"[ERROR] Unexpected Exception {ex.Message}" );
+                    Console.WriteLine($"\t{ex.ToString()}");
+                }
+            }
+        }
+
+        private static MessageBody buildMessage(DesiredPropertiesData dpd, double nextVal)
+        {
+            MessageBody message = new MessageBody();
+            message.ReadValue = nextVal;
+            message.SendData = dpd.SendData;
+            message.Frequency = dpd.Frequency;
+            message.SendInterval = dpd.SendInterval;
+            message.VerticalShift = dpd.VerticalShift;
+            message.WaveType = dpd.WaveType;
+            message.Amplitude = dpd.Amplitude;
+            message.ncfg.IsNoisy = dpd.IsNoisy;
+            message.ncfg.Duration = dpd.Duration;
+            message.ncfg.MinNoiseBound = dpd.MinNoiseBound;
+            message.ncfg.MaxNoiseBound = dpd.MaxNoiseBound;
+            return message;
+        }
+
+        private static Task OnDesiredPropertiesUpdate(TwinCollection twinCollection, object userContext)
+        {
+            desiredPropertiesData = new DesiredPropertiesData(twinCollection);
+            return Task.CompletedTask;
         }
     }
 }

@@ -12,18 +12,21 @@ namespace AzureIotEdgeSimulatedWaveSensor
         [TestMethod]
         public void TestSinWave()
         {
-            SimulatedWaveSensor ws1 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 1);
-            SimulatedWaveSensor ws2 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: .05, type: 1);
-            SimulatedWaveSensor ws3 = new SimulatedWaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 1);
+            SimulatedWaveSensor ws1 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 1, isNoisy: false, duration: 0, start: 0, min: 0, max: 0);
+            SimulatedWaveSensor ws2 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: .05, type: 1, isNoisy: false, duration: 0, start: 0, min: 0, max: 0);
+            SimulatedWaveSensor ws3 = new SimulatedWaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 1, isNoisy: false, duration: 0, start: 0, min: 0, max: 0);
+            SimulatedWaveSensor ws4 = new SimulatedWaveSensor(freq: .1, amp: 10, vert: 0, delta: .05, type: 1, isNoisy: true, duration: 2, start: 2, min: 3, max: -3);
 
             double[] readBlock1 = new double[1000];
             double[] readBlock2 = new double[1000];
             double[] readBlock3 = new double[1000];
+            double[] readBlock4 = new double[1000];
 
              for (int i = 0; i < 1000; i++) {
                  readBlock1[i] = ws1.ReadNext();
                  readBlock2[i] = ws2.ReadNext();
                  readBlock3[i] = ws3.ReadNext();
+                 readBlock4[i] = ws4.ReadNext();
              }
 
             StringBuilder sb = new StringBuilder("Data for Sin\n");
@@ -42,6 +45,11 @@ namespace AzureIotEdgeSimulatedWaveSensor
             {
                 sb.AppendFormat("{0},", readBlock3[i]);
             }
+            sb.Append("\nnoise in {-3,3} from 2 to 4\n");
+            for (int i = 0; i < readBlock4.Length; i++)
+            {
+                sb.AppendFormat("{0},", readBlock4[i]);
+            }
 
             System.IO.File.WriteAllText("\\Users\\Archer Morgan\\Documents\\WaveDataSin.csv", sb.ToString());
         }
@@ -49,9 +57,9 @@ namespace AzureIotEdgeSimulatedWaveSensor
         [TestMethod]
         public void TestSquareWave()
         {
-            SimulatedWaveSensor ws1 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 2);
-            SimulatedWaveSensor ws2 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: .05, type: 2);
-            SimulatedWaveSensor ws3 = new SimulatedWaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 2);
+            SimulatedWaveSensor ws1 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 2, isNoisy: false, duration: 0, start: 0, min: 0, max: 0);
+            SimulatedWaveSensor ws2 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: .05, type: 2, isNoisy: false, duration: 0, start: 0, min: 0, max: 0);
+            SimulatedWaveSensor ws3 = new SimulatedWaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 2, isNoisy: false, duration: 0, start: 0, min: 0, max: 0);
 
             double[] readBlock1 = new double[1000];
             double[] readBlock2 = new double[1000];
@@ -89,9 +97,9 @@ namespace AzureIotEdgeSimulatedWaveSensor
         [TestMethod]
         public void TestSawToothWave()
         {
-            SimulatedWaveSensor ws1 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 3);
-            SimulatedWaveSensor ws2 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: .01, type: 3);
-            SimulatedWaveSensor ws3 = new SimulatedWaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 3);
+            SimulatedWaveSensor ws1 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 3, isNoisy: false, duration: 0, start: 0, min: 0, max: 0);
+            SimulatedWaveSensor ws2 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: .01, type: 3, isNoisy: false, duration: 0, start: 0, min: 0, max: 0);
+            SimulatedWaveSensor ws3 = new SimulatedWaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 3, isNoisy: false, duration: 0, start: 0, min: 0, max: 0);
 
             double[] readBlock1 = new double[1000];
             double[] readBlock2 = new double[1000];
@@ -128,9 +136,9 @@ namespace AzureIotEdgeSimulatedWaveSensor
         [TestMethod]
         public void TestTriangleWave()
         {
-            SimulatedWaveSensor ws1 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 4);
-            SimulatedWaveSensor ws2 = new SimulatedWaveSensor(freq: .016, amp: 1, vert: 0, delta: .05, type: 4);
-            SimulatedWaveSensor ws3 = new SimulatedWaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 4);
+            SimulatedWaveSensor ws1 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 4, isNoisy: false, duration: 0, start: 0, min: 0, max: 0);
+            SimulatedWaveSensor ws2 = new SimulatedWaveSensor(freq: .016, amp: 1, vert: 0, delta: .05, type: 4, isNoisy: false, duration: 0, start: 0, min: 0, max: 0);
+            SimulatedWaveSensor ws3 = new SimulatedWaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 4, isNoisy: false, duration: 0, start: 0, min: 0, max: 0);
 
             double[] readBlock1 = new double[1000];
             double[] readBlock2 = new double[1000];

@@ -5,7 +5,7 @@ using System;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
-namespace WaveFormGeneratorModule
+namespace AzureIotEdgeSimulatedWaveSensor
 {
     public class DesiredPropertiesData
     {
@@ -16,9 +16,13 @@ namespace WaveFormGeneratorModule
         private double _verticalShift = 0;
         private int _waveType = 1;
 
+        // begin noise parameters
 
-
-
+        private bool _isNoisy = false;
+        private double _start = 0;
+        private double _duration = 0;
+        private double _minNoiseBound = 0;
+        private double _maxNoiseBound = 0;
 
         public DesiredPropertiesData(TwinCollection twinCollection)
         {
@@ -56,6 +60,26 @@ namespace WaveFormGeneratorModule
                 {
                     _waveType = twinCollection["WaveType"];
                 }
+                if(twinCollection.Contains("IsNoisy") && twinCollection["IsNoisy"] != null)
+                {
+                    _isNoisy = twinCollection["IsNoisy"];
+                }
+                if(twinCollection.Contains("Duration") && twinCollection["Duration"] != null)
+                {
+                    _duration = twinCollection["Duration"];
+                }
+                if(twinCollection.Contains("Start") && twinCollection["Start"] != null)
+                {
+                    _start = twinCollection["Start"];
+                }
+                if(twinCollection.Contains("MinNoiseBound") && twinCollection["MinNoiseBound"] != null)
+                {
+                    _minNoiseBound = twinCollection["MinNoiseBound"];
+                }
+                if(twinCollection.Contains("MaxNoiseBound") && twinCollection["MaxNoiseBound"] != null)
+                {
+                    _maxNoiseBound = twinCollection["MaxNoiseBound"];
+                }
             }
             catch(AggregateException aexc)
             {
@@ -81,10 +105,17 @@ namespace WaveFormGeneratorModule
         }
 
         public bool SendData => _sendData;
+        public bool IsNoisy => _isNoisy;
         public double SendInterval => _sendInterval;
         public double Frequency => _frequency;
         public double Amplitude => _amplitude;
         public double VerticalShift => _verticalShift;
         public int WaveType => _waveType;
+
+        public double Start => _start;
+        public double Duration => _duration;
+        public double MinNoiseBound => _minNoiseBound;
+        public double MaxNoiseBound => _maxNoiseBound;
     }
+
 }
