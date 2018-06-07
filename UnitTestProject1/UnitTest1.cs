@@ -60,15 +60,18 @@ namespace AzureIotEdgeSimulatedWaveSensor
             SimulatedWaveSensor ws1 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: 1, type: 2, isNoisy: false, duration: 0, start: 0, min: 0, max: 0);
             SimulatedWaveSensor ws2 = new SimulatedWaveSensor(freq: 0.15915, amp: 1, vert: 0, delta: .05, type: 2, isNoisy: false, duration: 0, start: 0, min: 0, max: 0);
             SimulatedWaveSensor ws3 = new SimulatedWaveSensor(freq: 0.5, amp: 6, vert: 4, delta: .2, type: 2, isNoisy: false, duration: 0, start: 0, min: 0, max: 0);
+            SimulatedWaveSensor ws4 = new SimulatedWaveSensor(freq: .1, amp: 10, vert: 0, delta: .05, type: 2, isNoisy: true, duration: 2, start: 2, min: 3, max: -3);
 
             double[] readBlock1 = new double[1000];
             double[] readBlock2 = new double[1000];
             double[] readBlock3 = new double[1000];
+            double[] readBlock4 = new double[1000];
 
              for (int i = 0; i < 1000; i++) {
                  readBlock1[i] = ws1.ReadNext();
                  readBlock2[i] = ws2.ReadNext();
                  readBlock3[i] = ws3.ReadNext();
+                 readBlock4[i] = ws4.ReadNext();
              }
 
 
@@ -87,6 +90,11 @@ namespace AzureIotEdgeSimulatedWaveSensor
             for (int i = 0; i < readBlock3.Length; i++)
             {
                 sb.AppendFormat("{0},", readBlock3[i]);
+            }
+            sb.Append("\nnoise in {-3,3} from 2 to 4\n");
+            for (int i = 0; i < readBlock4.Length; i++)
+            {
+                sb.AppendFormat("{0},", readBlock4[i]);
             }
 
             System.IO.File.WriteAllText("\\Users\\Archer Morgan\\Documents\\WaveDataSquare.csv", sb.ToString());

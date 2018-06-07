@@ -19,7 +19,7 @@ using AzureIotEdgeSimulatedWaveSensor;
 
 // // disabling async warning as the SendSimulationData is an async method
 // // but we don't wait for it
-// #pragma warning disable CS4014
+#pragma warning disable CS4014
 
 
     class Program
@@ -151,47 +151,33 @@ using AzureIotEdgeSimulatedWaveSensor;
             await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
 
             // Register callback to be called when a message is received by the module
-            await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
+            await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", ControlMessageHandler, ioTHubModuleClient);
+
+            // as this runs in a loop we don't await
+            SendSimulationData(ioTHubModuleClient);
         }
 
 
 
-
-
-
-
-
-
-        /// <summary>
-        /// This method is called whenever the module is sent a message from the EdgeHub. 
-        /// It just pipe the messages without any change.
-        /// It prints all the incoming messages.
-        /// </summary>
-        static async Task<MessageResponse> PipeMessage(Message message, object userContext)
+        private static Task<MessageResponse> ControlMessageHandler(Message message, object userContext)
         {
-            int counterValue = Interlocked.Increment(ref counter);
-
-            var deviceClient = userContext as DeviceClient;
-            if (deviceClient == null)
+            var messageBytes = message.GetBytes();
+            var messageString = Encoding.UTF8.GetString(messageBytes);
+            Console.WriteLine($"Received message Body: [{messageString}]");
+            try
             {
-                throw new InvalidOperationException("UserContext doesn't contain " + "expected values");
+                // Update my desired properties here
+                var NewDesiredProperties = JsonConvert.DeserializeObject<DesiredPropertiesData>(messageString);
+                desiredPropertiesData = NewDesiredProperties;
+                simulatedWaveSensor = new SimulatedWaveSensor(desiredPropertiesData);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to deserialize control command with exception: [{ex.Message}]");
             }
 
-            byte[] messageBytes = message.GetBytes();
-            string messageString = Encoding.UTF8.GetString(messageBytes);
-            Console.WriteLine($"Received message: {counterValue}, Body: [{messageString}]");
+            return Task.FromResult(MessageResponse.Completed);
 
-            if (!string.IsNullOrEmpty(messageString))
-            {
-                var pipeMessage = new Message(messageBytes);
-                foreach (var prop in message.Properties)
-                {
-                    pipeMessage.Properties.Add(prop.Key, prop.Value);
-                }
-                await deviceClient.SendEventAsync("output1", pipeMessage);
-                Console.WriteLine("Received message sent");
-            }
-            return MessageResponse.Completed;
         }
 
 
@@ -247,6 +233,8 @@ using AzureIotEdgeSimulatedWaveSensor;
         private static Task OnDesiredPropertiesUpdate(TwinCollection twinCollection, object userContext)
         {
             desiredPropertiesData = new DesiredPropertiesData(twinCollection);
+            simulatedWaveSensor = new SimulatedWaveSensor(desiredPropertiesData);
+
             return Task.CompletedTask;
         }
     }
