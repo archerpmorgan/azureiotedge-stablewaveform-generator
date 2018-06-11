@@ -17,10 +17,6 @@ using Newtonsoft.Json;
 using System.Net;
 using AzureIotEdgeSimulatedWaveSensor;
 
-// // disabling async warning as the SendSimulationData is an async method
-// // but we don't wait for it
-#pragma warning disable CS4014
-
 
     class Program
     {
@@ -28,26 +24,7 @@ using AzureIotEdgeSimulatedWaveSensor;
         private static volatile DesiredPropertiesData desiredPropertiesData;
         private static SimulatedWaveSensor simulatedWaveSensor;
 
-
-
-        // static async Task Main(string[] args)
-        // {
-        //     // The Edge runtime gives us the connection string we need -- it is injected as an environment variable
-        //     var connectionString = Environment.GetEnvironmentVariable("EdgeHubConnectionString");
-
-        //     // Cert verification is not yet fully functional when using Windows OS for the container
-        //     var bypassCertVerification = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-        //     if (!bypassCertVerification) InstallCert();
-        //     await Init(connectionString, bypassCertVerification);
-
-        //     // Wait until the app unloads or is cancelled
-        //     var cts = new CancellationTokenSource();
-        //     AssemblyLoadContext.Default.Unloading += (ctx) => cts.Cancel();
-        //     Console.CancelKeyPress += (sender, cpe) => cts.Cancel();
-        //     await WhenCancelled(cts.Token);
-        // }
-
-                static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             // The Edge runtime gives us the connection string we need -- it is injected as an environment variable
             string connectionString = Environment.GetEnvironmentVariable("EdgeHubConnectionString");
@@ -55,13 +32,13 @@ using AzureIotEdgeSimulatedWaveSensor;
             // Cert verification is not yet fully functional when using Windows OS for the container
             bool bypassCertVerification = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             if (!bypassCertVerification) InstallCert();
-            Init(connectionString, bypassCertVerification).Wait();
+            await Init(connectionString, bypassCertVerification);
 
             // Wait until the app unloads or is cancelled
             var cts = new CancellationTokenSource();
             AssemblyLoadContext.Default.Unloading += (ctx) => cts.Cancel();
             Console.CancelKeyPress += (sender, cpe) => cts.Cancel();
-            WhenCancelled(cts.Token).Wait();
+            await WhenCancelled(cts.Token);
         }
 
 
@@ -154,7 +131,7 @@ using AzureIotEdgeSimulatedWaveSensor;
             await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", ControlMessageHandler, ioTHubModuleClient);
 
             // as this runs in a loop we don't await
-            SendSimulationData(ioTHubModuleClient);
+            await SendSimulationData(ioTHubModuleClient);
         }
 
 
@@ -201,7 +178,7 @@ using AzureIotEdgeSimulatedWaveSensor;
 
                         await deviceClient.SendEventAsync("WaveFormOutput", message);
                         Console.WriteLine($"\t{DateTime.UtcNow.ToShortDateString()} {DateTime.UtcNow.ToLongTimeString()}> Sending message: {counter}, Body: {messageString}");
-
+                        Interlocked.Increment(ref counter);
                     }
                     await Task.Delay(TimeSpan.FromSeconds(desiredPropertiesData.SendInterval));
                 }
