@@ -10,7 +10,7 @@ namespace AzureIotEdgeSimulatedWaveSensor
     public class DesiredPropertiesData
     {
         private bool _sendData = true;
-        private double _sendInterval = .05;
+        private double _sendInterval = 1;
         private double _frequency = 1;
         private double _amplitude = 1;
         private double _verticalShift = 0;

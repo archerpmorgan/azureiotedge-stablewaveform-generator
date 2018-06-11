@@ -104,7 +104,7 @@ namespace AzureIotEdgeSimulatedWaveSensor
         public double ReadNext(){
 
             // map wave transformations onto array of read times
-            double retval = 0;
+            double retval = -1;
 
             switch (waveType)
             {
