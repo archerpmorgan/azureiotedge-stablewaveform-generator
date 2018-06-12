@@ -16,7 +16,41 @@ using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using System.Net;
 using AzureIotEdgeSimulatedWaveSensor;
+using McMaster.Extensions.CommandLineUtils;
 
+    class CommandLineWrapper 
+    {
+        static int Main(string[] args)
+        {
+            var app = new CommandLineApplication<Program>();
+
+            app.HelpOption();
+
+            var optionSendData =        app.Option("-s|--send-data", "Enable sending of data", CommandOptionType.NoValue);    
+            var optionSendInterval =    app.Option("-si|--send-interval <INTERVAL>", "The interval to send data. Defaults to 5 seconds.", CommandOptionType.SingleOrNoValue);
+            var optionFrequency =       app.Option("-f|--frequency", "", CommandOptionType.SingleOrNoValue);
+            var optionAmplitude =       app.Option("-a|--amplitude", "", CommandOptionType.SingleOrNoValue);    
+            var optionVerticalShift =   app.Option("-vs|--vertical-shift", "", CommandOptionType.SingleOrNoValue);    
+            var optionWaveType =        app.Option("-wt|--wave-type", "", CommandOptionType.SingleOrNoValue);    
+            var optionIsNoisy =         app.Option("-n|--is-noisy", "", CommandOptionType.NoValue);    
+            var optionDuration =        app.Option("-d|--duration", "", CommandOptionType.SingleOrNoValue);    
+            var optionStartValue =      app.Option("-v|--start", "", CommandOptionType.SingleOrNoValue);    
+            var optionMinNoiseBound =   app.Option("-min|--min-noise-bound", "", CommandOptionType.SingleOrNoValue);    
+            var optionMaxNoiseBound =   app.Option("-max|--max-noise-bound", "", CommandOptionType.SingleOrNoValue);    
+
+            app.OnExecute(() =>
+            {
+                var sd = optionSendData.HasValue()
+                    ? optionSendData.Value()
+                    : "world";
+
+                Console.WriteLine($"Hello {sd}!");
+                return 0;
+            });
+
+            return app.Execute(args);
+        }
+    }
 
     class Program
     {
@@ -24,8 +58,12 @@ using AzureIotEdgeSimulatedWaveSensor;
         private static volatile DesiredPropertiesData desiredPropertiesData;
         private static SimulatedWaveSensor simulatedWaveSensor;
 
+        private static string[] Args;
+
         static async Task Main(string[] args)
         {
+            Args = args;
+
             // The Edge runtime gives us the connection string we need -- it is injected as an environment variable
             string connectionString = Environment.GetEnvironmentVariable("EdgeHubConnectionString");
 
@@ -119,10 +157,8 @@ using AzureIotEdgeSimulatedWaveSensor;
             await ioTHubModuleClient.OpenAsync();
             Console.WriteLine("IoT Hub module client initialized.");
 
-            var moduleTwin = await ioTHubModuleClient.GetTwinAsync();
-            var moduleTwinCollection = moduleTwin.Properties.Desired;
-            desiredPropertiesData = new DesiredPropertiesData(moduleTwinCollection);
-            simulatedWaveSensor = new SimulatedWaveSensor(desiredPropertiesData);
+            (desiredPropertiesData, simulatedWaveSensor) = await ParseStartupArgs(ioTHubModuleClient);                 
+                
 
             // callback for updating desired properties through the portal or rest api
             await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
@@ -134,7 +170,22 @@ using AzureIotEdgeSimulatedWaveSensor;
             await SendSimulationData(ioTHubModuleClient);
         }
 
+        private static async Task<(DesiredPropertiesData, SimulatedWaveSensor)> ParseStartupArgs(DeviceClient deviceClient){
+            if(Args.Length <= 0)
+            {
+                // if there are no commandline args then 
+                var moduleTwin = await deviceClient.GetTwinAsync();
+                var moduleTwinCollection = moduleTwin.Properties.Desired;
+                desiredPropertiesData = new DesiredPropertiesData(moduleTwinCollection);
+                simulatedWaveSensor = new SimulatedWaveSensor(desiredPropertiesData);
+                return (desiredPropertiesData, simulatedWaveSensor);
 
+            } else {
+                // we have cmd line args to parse so let's do that and 
+                // report them into the desired properties for recording
+                return (null, null);
+            }
+        }
 
         private static Task<MessageResponse> ControlMessageHandler(Message message, object userContext)
         {
