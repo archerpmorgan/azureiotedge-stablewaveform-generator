@@ -24,6 +24,7 @@ using McMaster.Extensions.CommandLineUtils.Validation;
     {
         static object PropsLocker = new object();
         static int counter;
+        static bool isEdgeModule;
         private static DesiredPropertiesData desiredPropertiesData;
         private static SimulatedWaveSensor simulatedWaveSensor;
 
@@ -47,7 +48,9 @@ using McMaster.Extensions.CommandLineUtils.Validation;
             
             app.OnExecute(async () =>
             {
+
                 if(args.Length > 0){
+                    isEdgeModule = false;
                     desiredPropertiesData = new DesiredPropertiesData(
                         optionSendData.HasValue() ? true: default,
                         optionSendInterval.HasValue() ? double.Parse(optionSendInterval.Value()) : default,
@@ -163,13 +166,14 @@ using McMaster.Extensions.CommandLineUtils.Validation;
 
             //(desiredPropertiesData, simulatedWaveSensor) = await ParseStartupArgs(ioTHubModuleClient);                 
                 
-
+            if (null == desiredPropertiesData || null == simulatedWaveSensor)
             // callback for updating desired properties through the portal or rest api
             await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
-#if IOT_EDGE
+            
+            if (isEdgeModule){
             // Register callback to be called when a message is received by the module
-            await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", ControlMessageHandler, ioTHubModuleClient);
-#endif
+                await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", ControlMessageHandler, ioTHubModuleClient);
+            }
             // as this runs in a loop we don't await
             await SendSimulationData(ioTHubModuleClient);
         }
@@ -234,11 +238,13 @@ using McMaster.Extensions.CommandLineUtils.Validation;
                         var message = new Message(messageBytes);
                         message.ContentEncoding = "utf-8"; 
                         message.ContentType = "application/json"; 
-#if IOT_EDGE
-                        await deviceClient.SendEventAsync("WaveForm", message);
-#else
-                        await deviceClient.SendEventAsync(message);
-#endif
+
+                        if(isEdgeModule){
+                            await deviceClient.SendEventAsync("WaveForm", message);
+                        } else {
+                            await deviceClient.SendEventAsync(message);
+                        }
+
                         Console.WriteLine($"\t{DateTime.UtcNow.ToShortDateString()} {DateTime.UtcNow.ToLongTimeString()}> Sending message: {counter}, Body: {messageString}");
                         Interlocked.Increment(ref counter);
                     }
