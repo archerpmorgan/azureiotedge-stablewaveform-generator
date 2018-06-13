@@ -7,22 +7,48 @@ using Newtonsoft.Json;
 
 namespace AzureIotEdgeSimulatedWaveSensor
 {
+    public enum Waves {
+        Sine,
+        Sawtooth,
+        Square,
+        Triangle
+    }
+
     public class DesiredPropertiesData
     {
-        private bool _sendData = true;
-        private double _sendInterval = 1;
-        private double _frequency = 1;
-        private double _amplitude = 1;
-        private double _verticalShift = 0;
-        private int _waveType = 1;
+        public bool SendData {get; private set;}            = true;
+        public double SendInterval {get; private set;}      = .05;
+        public double Frequency {get; private set;}         = 1;
+        public double Amplitude {get; private set;}         = 1;
+        public double VerticalShift {get; private set;}     = 0;
+        public Waves WaveType {get; private set;}           = Waves.Sine;
 
         // begin noise parameters
 
-        private bool _isNoisy = false;
-        private double _start = 0;
-        private double _duration = 0;
-        private double _minNoiseBound = 0;
-        private double _maxNoiseBound = 0;
+        public bool IsNoisy {get; private set;}            = false;
+        public double Start {get; private set;}            = 0;
+        public double Duration {get; private set;}         = 0;
+        public double MinNoiseBound {get; private set;}    = 0;
+        public double MaxNoiseBound {get; private set;}    = 0;
+
+        public DesiredPropertiesData(
+            bool sendData, double sendInterval, double frequency,
+            double amplitude, double verticalShift, Waves waveType,
+            bool isNoisy, double start, double duration,
+            double minNoiseBound, double maxNoiseBound)
+        {
+            SendData            =   sendData;
+            SendInterval        =   sendInterval;
+            Frequency           =   frequency;
+            Amplitude           =   amplitude;
+            VerticalShift       =   verticalShift;
+            WaveType            =   waveType;
+            IsNoisy             =   isNoisy;
+            Duration            =   duration;
+            Start               =   start;
+            MinNoiseBound       =   minNoiseBound;
+            MaxNoiseBound       =   maxNoiseBound;
+        }
 
         public DesiredPropertiesData(TwinCollection twinCollection)
         {
@@ -31,54 +57,54 @@ namespace AzureIotEdgeSimulatedWaveSensor
             {
                 if(twinCollection.Contains("SendData") && twinCollection["SendData"] != null)
                 {
-                    _sendData = twinCollection["SendData"];
+                    SendData = twinCollection["SendData"];
                 }
 
                 if(twinCollection.Contains("SendInterval") && twinCollection["SendInterval"] != null)
                 {
-                    _sendInterval = twinCollection["SendInterval"];
+                    SendInterval = twinCollection["SendInterval"];
                 }
 
                 // begin custom desired properties for wave form module
 
                 if(twinCollection.Contains("Frequency") && twinCollection["Frequency"] != null)
                 {
-                    _frequency = twinCollection["Frequency"];
+                    Frequency = twinCollection["Frequency"];
                 }
 
                 if(twinCollection.Contains("Amplitude") && twinCollection["Amplitude"] != null)
                 {
-                    _amplitude = twinCollection["Amplitude"];
+                    Amplitude = twinCollection["Amplitude"];
                 }
 
                 if(twinCollection.Contains("VerticalShift") && twinCollection["VerticalShift"] != null)
                 {
-                    _verticalShift = twinCollection["VerticalShift"];
+                    VerticalShift = twinCollection["VerticalShift"];
                 }
 
                 if(twinCollection.Contains("WaveType") && twinCollection["WaveType"] != null)
                 {
-                    _waveType = twinCollection["WaveType"];
+                    WaveType = (Waves)Enum.Parse(typeof(Waves), twinCollection["WaveType"]);
                 }
                 if(twinCollection.Contains("IsNoisy") && twinCollection["IsNoisy"] != null)
                 {
-                    _isNoisy = twinCollection["IsNoisy"];
+                    IsNoisy = twinCollection["IsNoisy"];
                 }
                 if(twinCollection.Contains("Duration") && twinCollection["Duration"] != null)
                 {
-                    _duration = twinCollection["Duration"];
+                    Duration = twinCollection["Duration"];
                 }
                 if(twinCollection.Contains("Start") && twinCollection["Start"] != null)
                 {
-                    _start = twinCollection["Start"];
+                    Start = twinCollection["Start"];
                 }
                 if(twinCollection.Contains("MinNoiseBound") && twinCollection["MinNoiseBound"] != null)
                 {
-                    _minNoiseBound = twinCollection["MinNoiseBound"];
+                    MinNoiseBound = twinCollection["MinNoiseBound"];
                 }
                 if(twinCollection.Contains("MaxNoiseBound") && twinCollection["MaxNoiseBound"] != null)
                 {
-                    _maxNoiseBound = twinCollection["MaxNoiseBound"];
+                    MaxNoiseBound = twinCollection["MaxNoiseBound"];
                 }
             }
             catch(AggregateException aexc)
@@ -94,28 +120,14 @@ namespace AzureIotEdgeSimulatedWaveSensor
             }
             finally
             {
-                Console.WriteLine($"Value for SendData = {_sendData}");
-                Console.WriteLine($"Value for SendInterval = {_sendInterval}");
-                Console.WriteLine($"Value for Frequency = {_frequency}");
-                Console.WriteLine($"Value for Amplitude = {_amplitude}");
-                Console.WriteLine($"Value for VerticalShift = {_verticalShift}");
-                Console.WriteLine($"Value for WaveType = {_waveType}");
+                Console.WriteLine($"Value for SendData = {SendData}");
+                Console.WriteLine($"Value for SendInterval = {SendInterval}");
+                Console.WriteLine($"Value for Frequency = {Frequency}");
+                Console.WriteLine($"Value for Amplitude = {Amplitude}");
+                Console.WriteLine($"Value for VerticalShift = {VerticalShift}");
+                Console.WriteLine($"Value for WaveType = {WaveType}");
 
             }
         }
-
-        public bool SendData => _sendData;
-        public bool IsNoisy => _isNoisy;
-        public double SendInterval => _sendInterval;
-        public double Frequency => _frequency;
-        public double Amplitude => _amplitude;
-        public double VerticalShift => _verticalShift;
-        public int WaveType => _waveType;
-
-        public double Start => _start;
-        public double Duration => _duration;
-        public double MinNoiseBound => _minNoiseBound;
-        public double MaxNoiseBound => _maxNoiseBound;
     }
-
 }
