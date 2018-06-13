@@ -40,10 +40,10 @@ using McMaster.Extensions.CommandLineUtils.Validation;
             var optionVerticalShift =   app.Option("-vs|--vertical-shift", "Positive or negative offset.", CommandOptionType.SingleOrNoValue);    
             var optionWaveType =        app.Option("-wt|--wave-type", "(Sine|Square|SawTooth|Triangle)", CommandOptionType.SingleOrNoValue).Accepts(v => v.Values("Sine","Square","SawTooth","Triangle"));    
             var optionIsNoisy =         app.Option("-n|--is-noisy", "If present, indicates aberations in value output.", CommandOptionType.NoValue);    
-            var optionDuration =        app.Option("-d|--duration", "Lenght of noise generation in seconds. If 'is noisy', defaults to 1 second (1hz).", CommandOptionType.SingleOrNoValue);    
-            var optionStartValue =      app.Option("-v|--start", "", CommandOptionType.SingleOrNoValue);    
-            var optionMinNoiseBound =   app.Option("-min|--min-noise-bound", "", CommandOptionType.SingleOrNoValue);    
-            var optionMaxNoiseBound =   app.Option("-max|--max-noise-bound", "", CommandOptionType.SingleOrNoValue);    
+            var optionDuration =        app.Option("-d|--duration", "Length of noise generation in seconds. If 'is noisy', defaults to 1 second (1hz).", CommandOptionType.SingleOrNoValue);    
+            var optionStartValue =      app.Option("-v|--start", "The start time in the wave for noise generation.", CommandOptionType.SingleOrNoValue);    
+            var optionMinNoiseBound =   app.Option("-min|--min-noise-bound", "The min aberant data value for noise.", CommandOptionType.SingleOrNoValue);    
+            var optionMaxNoiseBound =   app.Option("-max|--max-noise-bound", "The max aberant data value for noise.", CommandOptionType.SingleOrNoValue);    
             
             app.OnExecute(async () =>
             {
