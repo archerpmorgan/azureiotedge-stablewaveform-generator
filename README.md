@@ -9,19 +9,21 @@
 
 Below are the desired properties in Json used by the module.
 
-{
-    "properties": {
-        "desired": {
-            "SendData": true,
-            "Frequency": 1,
-            "Amplitude": 1,
-            "VerticalShift", 0,
-            "SendInterval": .05,
-            "WaveType", 1
-        }
-    }
-}
-
+  "properties": {
+    "desired": {
+      "SendData": true,
+      "Frequency": 1,
+      "Amplitude": 1,
+      "VerticalShift": 0,
+      "SendInterval": 10,
+      "WaveType": 1,
+      "NoiseConfiguration": {
+        "Start": 0,
+        "Duration": 0,
+        "IsNoisy": false,
+        "MinNoiseBound": 0,
+        "MaxNoiseBound": 0
+      }
 SendData
     starts or stops pushing messages to the output endpoint
 SendInterval
