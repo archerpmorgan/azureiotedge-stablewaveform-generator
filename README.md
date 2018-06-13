@@ -19,6 +19,8 @@ Below are the desired properties in Json used by the module:
         "MinNoiseBound": 0,
         "MaxNoiseBound": 0
       }
+    }
+  }
 ```
 
 | Twin Property  | Description |
