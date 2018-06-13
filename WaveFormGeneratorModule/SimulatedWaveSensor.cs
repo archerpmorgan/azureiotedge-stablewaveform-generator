@@ -23,7 +23,7 @@ namespace AzureIotEdgeSimulatedWaveSensor
         // 2 - Square
         // 3 - SawTooth
         // 4 - Triangle
-        private int waveType;
+        private Waves waveType;
 
         //begin noise parameters
         private bool isNoisy {get; set;}
@@ -36,7 +36,7 @@ namespace AzureIotEdgeSimulatedWaveSensor
 
         private static readonly Random rnd = new Random();
 
-        public SimulatedWaveSensor(double freq, double amp, double vert, double delta, int type, bool isNoisy, double duration, double start, double min, double max){
+        public SimulatedWaveSensor(double freq, double amp, double vert, double delta, Waves type, bool isNoisy, double duration, double start, double min, double max){
             this.frequency = freq;
             this.period = 1 / frequency;
             this.amplitude = amp;
@@ -107,13 +107,13 @@ namespace AzureIotEdgeSimulatedWaveSensor
 
             switch (waveType)
             {
-                case 1:
+                case Waves.Sine:
                     retval = sine(cur); break;
-                case 2: 
+                case Waves.Square: 
                     retval = square(cur); break;
-                case 3:
+                case Waves.Sawtooth:
                     retval = sawTooth(cur); break;
-                case 4:
+                case Waves.Triangle:
                     retval = triangle(cur); break;
                 default: break;
             }

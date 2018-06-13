@@ -9,7 +9,7 @@ namespace AzureIotEdgeSimulatedWaveSensor {
         public double Frequency { get; set; }
         public double Amplitude { get; set; }
         public double VerticalShift{ get; set; }
-        public int WaveType { get; set; }
+        public string WaveType { get; set; }
         public NoiseConfiguration ncfg = new NoiseConfiguration();
     }
 
