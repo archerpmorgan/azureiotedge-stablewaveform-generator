@@ -19,7 +19,7 @@ using AzureIotEdgeSimulatedWaveSensor;
 using McMaster.Extensions.CommandLineUtils;
 using McMaster.Extensions.CommandLineUtils.Validation;
 
-
+//#define IOT_EDGE
     class Program
     {
         static object PropsLocker = new object();
@@ -49,7 +49,7 @@ using McMaster.Extensions.CommandLineUtils.Validation;
             {
                 if(args.Length > 0){
                     desiredPropertiesData = new DesiredPropertiesData(
-                        optionSendData.HasValue() ? bool.Parse(optionSendData.Value()) : default,
+                        optionSendData.HasValue() ? true: default,
                         optionSendInterval.HasValue() ? double.Parse(optionSendInterval.Value()) : default,
                         optionFrequency.HasValue() ? double.Parse(optionFrequency.Value()) : default,
                         optionAmplitude.HasValue() ? double.Parse(optionAmplitude.Value()) : default,
@@ -61,6 +61,7 @@ using McMaster.Extensions.CommandLineUtils.Validation;
                         optionMinNoiseBound.HasValue() ? double.Parse(optionMinNoiseBound.Value()) : default,
                         optionMaxNoiseBound.HasValue() ? double.Parse(optionMaxNoiseBound.Value()) : default
                     );
+                    simulatedWaveSensor = new SimulatedWaveSensor(desiredPropertiesData);
                 }
                 // The Edge runtime gives us the connection string we need -- it is injected as an environment variable
                 string connectionString = Environment.GetEnvironmentVariable("EdgeHubConnectionString");
@@ -165,10 +166,10 @@ using McMaster.Extensions.CommandLineUtils.Validation;
 
             // callback for updating desired properties through the portal or rest api
             await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
-
+#if IOT_EDGE
             // Register callback to be called when a message is received by the module
             await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", ControlMessageHandler, ioTHubModuleClient);
-
+#endif
             // as this runs in a loop we don't await
             await SendSimulationData(ioTHubModuleClient);
         }
@@ -233,8 +234,11 @@ using McMaster.Extensions.CommandLineUtils.Validation;
                         var message = new Message(messageBytes);
                         message.ContentEncoding = "utf-8"; 
                         message.ContentType = "application/json"; 
-
-                        await deviceClient.SendEventAsync("WaveFormOutput", message);
+#if IOT_EDGE
+                        await deviceClient.SendEventAsync("WaveForm", message);
+#else
+                        await deviceClient.SendEventAsync(message);
+#endif
                         Console.WriteLine($"\t{DateTime.UtcNow.ToShortDateString()} {DateTime.UtcNow.ToLongTimeString()}> Sending message: {counter}, Body: {messageString}");
                         Interlocked.Increment(ref counter);
                     }
