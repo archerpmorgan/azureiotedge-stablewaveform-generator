@@ -1,7 +1,8 @@
 # Simulated Wave Form Generator for IoT Edge
 
 
-Below are the desired properties in Json used by the module.
+Below are the desired properties in Json used by the module:
+
 ```json
 {
     "properties": {
@@ -9,9 +10,9 @@ Below are the desired properties in Json used by the module.
             "SendData": true,
             "Frequency": 1,
             "Amplitude": 1,
-            "VerticalShift", 0,
-            "SendInterval": .05,
-            "WaveType", "Sine"
+            "VerticalShift": 0,
+            "SendInterval": 0.05,
+            "WaveType": "Sine"
         }
     }
 }
