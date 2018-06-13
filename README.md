@@ -9,9 +9,9 @@ Below are the desired properties in Json used by the module:
       "SendData": true,
       "Frequency": 1,
       "Amplitude": 1,
-            "VerticalShift": 0,
-            "SendInterval": 0.05,
-            "WaveType": "Sine"
+      "VerticalShift": 0,
+      "SendInterval": 0.05,
+      "WaveType": "Sine"
       "NoiseConfiguration": {
         "Start": 0,
         "Duration": 0,
