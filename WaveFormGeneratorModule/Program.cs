@@ -1,6 +1,3 @@
-namespace WaveFormGeneratorModule
-{
-
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -18,8 +15,11 @@ using System.Net;
 using AzureIotEdgeSimulatedWaveSensor;
 using McMaster.Extensions.CommandLineUtils;
 using McMaster.Extensions.CommandLineUtils.Validation;
+using System.ComponentModel.DataAnnotations;
 
-//#define IOT_EDGE
+namespace WaveFormGeneratorModule
+{
+
     class Program
     {
         static object PropsLocker = new object();
@@ -32,25 +32,32 @@ using McMaster.Extensions.CommandLineUtils.Validation;
         {
             var app = new CommandLineApplication<Program>();
 
-            app.HelpOption();
+            // used to pull default values from DPD object.
+            var dpv = new DesiredPropertiesData();
+
+            app.HelpOption("-?|-h|--help",inherited: true);
 
             var optionSendData =        app.Option("-s|--send-data", "Enable sending of data", CommandOptionType.NoValue);    
-            var optionSendInterval =    app.Option("-si|--send-interval <INTERVAL>", "The interval to send data. Defaults to 5 seconds.", CommandOptionType.SingleOrNoValue);
-            var optionFrequency =       app.Option("-f|--frequency", "Frequency of wave measureing reading. Defaults to 5 seconds (0.2hz).", CommandOptionType.SingleOrNoValue);
-            var optionAmplitude =       app.Option("-a|--amplitude", "Amplitude of the wave.", CommandOptionType.SingleOrNoValue);    
-            var optionVerticalShift =   app.Option("-vs|--vertical-shift", "Positive or negative offset.", CommandOptionType.SingleOrNoValue);    
-            var optionWaveType =        app.Option("-wt|--wave-type", "(Sine|Square|SawTooth|Triangle)", CommandOptionType.SingleOrNoValue).Accepts(v => v.Values("Sine","Square","SawTooth","Triangle"));    
-            var optionIsNoisy =         app.Option("-n|--is-noisy", "If present, indicates aberations in value output.", CommandOptionType.NoValue);    
-            var optionDuration =        app.Option("-d|--duration", "Length of noise generation in seconds. If 'is noisy', defaults to 1 second (1hz).", CommandOptionType.SingleOrNoValue);    
-            var optionStartValue =      app.Option("-v|--start", "The start time in the wave for noise generation.", CommandOptionType.SingleOrNoValue);    
-            var optionMinNoiseBound =   app.Option("-min|--min-noise-bound", "The min aberant data value for noise.", CommandOptionType.SingleOrNoValue);    
-            var optionMaxNoiseBound =   app.Option("-max|--max-noise-bound", "The max aberant data value for noise.", CommandOptionType.SingleOrNoValue);    
+            var optionSendInterval =    app.Option("-si|--send-interval <INTERVAL>", $"The interval to send data. Defaults to {dpv.SendInterval} seconds.", CommandOptionType.SingleOrNoValue);
+            var optionFrequency =       app.Option("-f|--frequency", $"Frequency of wave measureing reading. Defaults to {dpv.Frequency} seconds ({(1/(dpv.Frequency)).ToString("F3")} hz).", CommandOptionType.SingleOrNoValue);
+            var optionAmplitude =       app.Option("-a|--amplitude", $"Amplitude of the wave.", CommandOptionType.SingleOrNoValue);    
+            var optionVerticalShift =   app.Option("-vs|--vertical-shift", $"Positive or negative offset.", CommandOptionType.SingleOrNoValue);    
+            var optionWaveType =        app.Option("-wt|--wave-type", $"Optional values are ({String.Join('|',Enum.GetNames(typeof(Waves)))}). Defaults to {dpv.WaveType.ToString()}", CommandOptionType.SingleOrNoValue).Accepts(v => v.Enum<Waves>(ignoreCase: true));    
+            var optionIsNoisy =         app.Option("-n|--noisy", $"If flag is present, aberations in wave value will be output.", CommandOptionType.NoValue);    
+            var optionDuration =        app.Option("-d|--duration", $"Length of noise generation in seconds. If 'is noisy'. Defaults to {dpv.Duration} seconds ({(1/(dpv.Duration)).ToString("F3")} hz).", CommandOptionType.SingleOrNoValue);    
+            var optionStartValue =      app.Option("-v|--start", $"The start time in the wave for noise generation. Defaults to {dpv.Start}", CommandOptionType.SingleOrNoValue);    
+            var optionMinNoiseBound =   app.Option("-min|--min-noise-bound", $"The min aberant data value for noise. Defaults to {dpv.MinNoiseBound}", CommandOptionType.SingleOrNoValue);    
+            var optionMaxNoiseBound =   app.Option("-max|--max-noise-bound", $"The max aberant data value for noise. Defaults to {dpv.MaxNoiseBound}", CommandOptionType.SingleOrNoValue);    
+            
+            // null dpv 
+            dpv = null;
             
             app.OnExecute(async () =>
             {
 
                 if(args.Length > 0){
                     isEdgeModule = false;
+
                     desiredPropertiesData = new DesiredPropertiesData(
                         optionSendData.HasValue() ? true: default,
                         optionSendInterval.HasValue() ? double.Parse(optionSendInterval.Value()) : default,
@@ -64,6 +71,7 @@ using McMaster.Extensions.CommandLineUtils.Validation;
                         optionMinNoiseBound.HasValue() ? double.Parse(optionMinNoiseBound.Value()) : default,
                         optionMaxNoiseBound.HasValue() ? double.Parse(optionMaxNoiseBound.Value()) : default
                     );
+
                     simulatedWaveSensor = new SimulatedWaveSensor(desiredPropertiesData);
                 }
                 // The Edge runtime gives us the connection string we need -- it is injected as an environment variable
@@ -169,7 +177,7 @@ using McMaster.Extensions.CommandLineUtils.Validation;
             if (null == desiredPropertiesData || null == simulatedWaveSensor)
             // callback for updating desired properties through the portal or rest api
             await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
-            
+
             if (isEdgeModule){
             // Register callback to be called when a message is received by the module
                 await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", ControlMessageHandler, ioTHubModuleClient);

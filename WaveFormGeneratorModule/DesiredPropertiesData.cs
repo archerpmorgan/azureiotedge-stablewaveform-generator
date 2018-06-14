@@ -31,6 +31,8 @@ namespace AzureIotEdgeSimulatedWaveSensor
         public double MinNoiseBound {get; private set;}    = 0;
         public double MaxNoiseBound {get; private set;}    = 0;
 
+        internal DesiredPropertiesData(){ }
+
         public DesiredPropertiesData(
             bool sendData, double sendInterval, double frequency,
             double amplitude, double verticalShift, Waves waveType,
