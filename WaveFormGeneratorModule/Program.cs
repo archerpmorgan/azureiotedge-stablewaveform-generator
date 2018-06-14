@@ -16,6 +16,7 @@ using AzureIotEdgeSimulatedWaveSensor;
 using McMaster.Extensions.CommandLineUtils;
 using McMaster.Extensions.CommandLineUtils.Validation;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Azure.Devices.Provisioning.Service;
 
 namespace WaveFormGeneratorModule
 {
@@ -37,6 +38,7 @@ namespace WaveFormGeneratorModule
 
             app.HelpOption("-?|-h|--help",inherited: true);
 
+            var optionStandAlone =      app.Option("-sa|--stand-alone", "Enable Stand-Alone mode to run simulator outside of Azure IoT Edge", CommandOptionType.NoValue);
             var optionSendData =        app.Option("-s|--send-data", "Enable sending of data", CommandOptionType.NoValue);    
             var optionSendInterval =    app.Option("-si|--send-interval <INTERVAL>", $"The interval to send data. Defaults to {dpv.SendInterval} seconds.", CommandOptionType.SingleOrNoValue);
             var optionFrequency =       app.Option("-f|--frequency", $"Frequency of wave measureing reading. Defaults to {dpv.Frequency} seconds ({(1/(dpv.Frequency)).ToString("F3")} hz).", CommandOptionType.SingleOrNoValue);
@@ -49,6 +51,37 @@ namespace WaveFormGeneratorModule
             var optionMinNoiseBound =   app.Option("-min|--min-noise-bound", $"The min aberant data value for noise. Defaults to {dpv.MinNoiseBound}", CommandOptionType.SingleOrNoValue);    
             var optionMaxNoiseBound =   app.Option("-max|--max-noise-bound", $"The max aberant data value for noise. Defaults to {dpv.MaxNoiseBound}", CommandOptionType.SingleOrNoValue);    
             
+            app.Command("dps-enroll", dpsCmd =>
+            {
+                var pcs         = dpsCmd.Option("-p|--provisioning-connection-string","description", CommandOptionType.SingleValue).IsRequired();
+                var deviceId    = dpsCmd.Option("-d|--device-id", "", CommandOptionType.SingleValue).IsRequired();
+                var enabled     = dpsCmd.Option("-e|--enabled", "Set the provisioning status as enabled", CommandOptionType.SingleValue).Accepts(v => v.Enum<ProvisioningStatus>(ignoreCase: true));  
+                var tpmkey      = dpsCmd.Option("-t|--tpm-endorsement-key", "Set a custom dps enrollment key", CommandOptionType.NoValue);
+                var regId       = dpsCmd.Option("-r|--registration-id", "Set a custom registration-id", CommandOptionType.NoValue);
+                
+                dpsCmd.OnExecute(async () => {
+                    var registrationId = "stable-wave-form-generator-registrationid";
+                    var tpmEndorsementKey =
+                        "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj2gUS" +
+                        "cTk1UjioeTlfGYZrrimExB+bScH75adUMRIi2UOMxG1kw4y+9RW/IVoMl4e620VxZad0ARX2gUqVjYO7KPVt3d" +
+                        "yKhZS3dkcvfBisBhP1XH9B33VqHG9SHnbnQXdBUaCgKAfxome8UmBKfe+naTsE5fkvjb/do3/dD6l4sGBwFCnKR" +
+                        "dln4XpM03zLpoHFao8zOwt8l/uP3qUIxmCYv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI6zQFOKF/rwsfBtFe" +
+                        "WlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7dLIVPnlgZcBhgy1SSDQMQ==";
+
+                    var sampleDeviceId = "stableWaveFormGenerator";    
+                    await EnrollDPSDevice(
+                        pcs.Value(),
+                        tpmkey.HasValue() ? tpmkey.Value() : tpmEndorsementKey,
+                        regId.HasValue() ? regId.Value() : registrationId,
+                        deviceId.HasValue() ? deviceId.Value() : sampleDeviceId,
+                        enabled.HasValue() ? ((ProvisioningStatus)Enum.Parse(typeof(ProvisioningStatus), optionWaveType.Value())) : ProvisioningStatus.Enabled
+                    );
+
+                    return 1;
+                });
+            });
+
+            
             // null the temp dpv object 
             dpv = null;
             
@@ -56,7 +89,8 @@ namespace WaveFormGeneratorModule
             {
 
                 if(args.Length > 0){
-                    isEdgeModule = false;
+                    // not running in edge if given stand-alone flag
+                    isEdgeModule = optionStandAlone.HasValue() ? false : true; 
 
                     desiredPropertiesData = new DesiredPropertiesData(
                         optionSendData.HasValue() ? true: default,
@@ -290,6 +324,40 @@ namespace WaveFormGeneratorModule
                 simulatedWaveSensor = new SimulatedWaveSensor(desiredPropertiesData);
             }
             return Task.CompletedTask;
+        }
+
+        public static async Task EnrollDPSDevice(
+            string provisioningConnectionString, 
+            string tpmEndorsementKey, 
+            string registrationId,
+            string deviceId,
+            ProvisioningStatus provisioningStatus)
+        {
+            Console.WriteLine("Starting sample...");
+
+            using (ProvisioningServiceClient provisioningServiceClient =
+                    ProvisioningServiceClient.CreateFromConnectionString(provisioningConnectionString))
+            {
+                // create a new individualEnrollment config
+                Console.WriteLine("\nCreating a new individualEnrollment...");
+                Attestation attestation = new TpmAttestation(tpmEndorsementKey);
+                IndividualEnrollment individualEnrollment =
+                        new IndividualEnrollment(
+                                registrationId,
+                                attestation);
+
+                individualEnrollment.DeviceId = deviceId;
+                individualEnrollment.ProvisioningStatus = provisioningStatus;
+
+                // create the enrollment
+                Console.WriteLine("\nAdding new individualEnrollment...");
+                IndividualEnrollment individualEnrollmentResult =
+                    await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
+                Console.WriteLine("\nIndividualEnrollment created with success.");
+                Console.WriteLine(individualEnrollmentResult);
+
+
+            }
         }
     }
 }
