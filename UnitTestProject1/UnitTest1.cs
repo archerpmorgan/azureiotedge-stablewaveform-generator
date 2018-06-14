@@ -1,7 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
+
 
 namespace AzureIotEdgeSimulatedWaveSensor
 {
@@ -22,12 +24,13 @@ namespace AzureIotEdgeSimulatedWaveSensor
             double[] readBlock3 = new double[1000];
             double[] readBlock4 = new double[1000];
 
-             for (int i = 0; i < 1000; i++) {
-                 readBlock1[i] = ws1.ReadNext();
-                 readBlock2[i] = ws2.ReadNext();
-                 readBlock3[i] = ws3.ReadNext();
-                 readBlock4[i] = ws4.ReadNext();
-             }
+            for (int i = 0; i < 1000; i++)
+            {
+                readBlock1[i] = ws1.ReadNext();
+                readBlock2[i] = ws2.ReadNext();
+                readBlock3[i] = ws3.ReadNext();
+                readBlock4[i] = ws4.ReadNext();
+            }
 
             StringBuilder sb = new StringBuilder("Data for Sin\n");
             sb.Append("Time between reads (x-axis) is 1 seconds\n");
@@ -51,7 +54,15 @@ namespace AzureIotEdgeSimulatedWaveSensor
                 sb.AppendFormat("{0},", readBlock4[i]);
             }
 
-            System.IO.File.WriteAllText("\\Users\\Archer Morgan\\Documents\\WaveDataSin.csv", sb.ToString());
+            // write result to csv relative to app binary
+            string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            while (!Path.GetFileName(path).Equals("UnitTestProject1"))
+            {
+                path = Directory.GetParent(path).FullName;
+            }
+            File.SetAttributes(path, FileAttributes.Normal);
+            path = path + "\\Output\\outputSin.csv";
+            File.WriteAllText(path, sb.ToString());
         }
 
         [TestMethod]
@@ -67,12 +78,13 @@ namespace AzureIotEdgeSimulatedWaveSensor
             double[] readBlock3 = new double[1000];
             double[] readBlock4 = new double[1000];
 
-             for (int i = 0; i < 1000; i++) {
-                 readBlock1[i] = ws1.ReadNext();
-                 readBlock2[i] = ws2.ReadNext();
-                 readBlock3[i] = ws3.ReadNext();
-                 readBlock4[i] = ws4.ReadNext();
-             }
+            for (int i = 0; i < 1000; i++)
+            {
+                readBlock1[i] = ws1.ReadNext();
+                readBlock2[i] = ws2.ReadNext();
+                readBlock3[i] = ws3.ReadNext();
+                readBlock4[i] = ws4.ReadNext();
+            }
 
 
             StringBuilder sb = new StringBuilder("Data for Square\n");
@@ -97,8 +109,15 @@ namespace AzureIotEdgeSimulatedWaveSensor
                 sb.AppendFormat("{0},", readBlock4[i]);
             }
 
-            System.IO.File.WriteAllText("\\Users\\Archer Morgan\\Documents\\WaveDataSquare.csv", sb.ToString());
-
+            // write result to csv relative to app binary
+            string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            while (!Path.GetFileName(path).Equals("UnitTestProject1"))
+            {
+                path = Directory.GetParent(path).FullName;
+            }
+            File.SetAttributes(path, FileAttributes.Normal);
+            path = path + "\\Output\\outputSquare.csv";
+            File.WriteAllText(path, sb.ToString());
         }
 
 
@@ -113,11 +132,12 @@ namespace AzureIotEdgeSimulatedWaveSensor
             double[] readBlock2 = new double[1000];
             double[] readBlock3 = new double[1000];
 
-             for (int i = 0; i < 1000; i++) {
-                 readBlock1[i] = ws1.ReadNext();
-                 readBlock2[i] = ws2.ReadNext();
-                 readBlock3[i] = ws3.ReadNext();
-             }
+            for (int i = 0; i < 1000; i++)
+            {
+                readBlock1[i] = ws1.ReadNext();
+                readBlock2[i] = ws2.ReadNext();
+                readBlock3[i] = ws3.ReadNext();
+            }
 
 
             StringBuilder sb = new StringBuilder("Data for Sawtooth\n");
@@ -137,7 +157,15 @@ namespace AzureIotEdgeSimulatedWaveSensor
                 sb.AppendFormat("{0},", readBlock3[i]);
             }
 
-            System.IO.File.WriteAllText("\\Users\\Archer Morgan\\Documents\\WaveDataSaw.csv", sb.ToString());
+            // write result to csv relative to app binary
+            string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            while (!Path.GetFileName(path).Equals("UnitTestProject1"))
+            {
+                path = Directory.GetParent(path).FullName;
+            }
+            File.SetAttributes(path, FileAttributes.Normal);
+            path = path + "\\Output\\outputSaw.csv";
+            File.WriteAllText(path, sb.ToString());
         }
 
 
@@ -177,11 +205,17 @@ namespace AzureIotEdgeSimulatedWaveSensor
                 sb.AppendFormat("{0},", readBlock3[i]);
             }
 
-            System.IO.File.WriteAllText("\\Users\\Archer Morgan\\Documents\\WaveDataTriangle.csv", sb.ToString());
+
+            // write result to csv relative to app binary
+            string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            while (! Path.GetFileName(path).Equals("UnitTestProject1"))
+            {
+                path = Directory.GetParent(path).FullName;
+            }
+            File.SetAttributes(path, FileAttributes.Normal);
+            path = path + "\\Output\\outputTriangle.csv";
+            File.WriteAllText(path, sb.ToString());
 
         }
     }
-
-
-
 }

@@ -29,7 +29,7 @@
 *.VC.db
 
 *.VC.opendb
-
+*.output*.csv
 
 
 # Build results
