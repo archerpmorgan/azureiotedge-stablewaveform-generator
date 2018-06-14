@@ -49,7 +49,7 @@ namespace WaveFormGeneratorModule
             var optionMinNoiseBound =   app.Option("-min|--min-noise-bound", $"The min aberant data value for noise. Defaults to {dpv.MinNoiseBound}", CommandOptionType.SingleOrNoValue);    
             var optionMaxNoiseBound =   app.Option("-max|--max-noise-bound", $"The max aberant data value for noise. Defaults to {dpv.MaxNoiseBound}", CommandOptionType.SingleOrNoValue);    
             
-            // null dpv 
+            // null the temp dpv object 
             dpv = null;
             
             app.OnExecute(async () =>

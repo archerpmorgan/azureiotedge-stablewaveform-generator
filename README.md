@@ -11,7 +11,7 @@ Below are the desired properties in Json used by the module:
       "Amplitude": 1,
       "VerticalShift": 0,
       "SendInterval": 0.05,
-      "WaveType": "Sine"
+      "WaveType": "Sine",
       "NoiseConfiguration": {
         "Start": 0,
         "Duration": 0,
