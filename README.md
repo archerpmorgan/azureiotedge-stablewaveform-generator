@@ -31,3 +31,7 @@ Below are the desired properties in Json used by the module:
 | Amplitude  | the aplitude of the wave |
 | VerticalShift  | shift the wave vertically by some constant amount  |
 | WaveType  | tells the simulator which type of wave to produce  |
+
+
+[TPM Simulator](https://www.microsoft.com/en-us/download/confirmation.aspx?id=52507)
+[TPM Project Page](https://www.microsoft.com/en-us/research/project/the-trusted-platform-module-tpm/)

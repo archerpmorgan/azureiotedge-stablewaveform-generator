@@ -38,32 +38,33 @@ namespace WaveFormGeneratorModule
 
             app.HelpOption("-?|-h|--help",inherited: true);
 
-            var optionStandAlone =      app.Option("-sa|--stand-alone", "Enable Stand-Alone mode to run simulator outside of Azure IoT Edge", CommandOptionType.NoValue);
-            var optionSendData =        app.Option("-s|--send-data", "Enable sending of data", CommandOptionType.NoValue);    
-            var optionSendInterval =    app.Option("-si|--send-interval <INTERVAL>", $"The interval to send data. Defaults to {dpv.SendInterval} seconds.", CommandOptionType.SingleOrNoValue);
-            var optionFrequency =       app.Option("-f|--frequency", $"Frequency of wave measureing reading. Defaults to {dpv.Frequency} seconds ({(1/(dpv.Frequency)).ToString("F3")} hz).", CommandOptionType.SingleOrNoValue);
-            var optionAmplitude =       app.Option("-a|--amplitude", $"Amplitude of the wave.", CommandOptionType.SingleOrNoValue);    
-            var optionVerticalShift =   app.Option("-vs|--vertical-shift", $"Positive or negative offset.", CommandOptionType.SingleOrNoValue);    
-            var optionWaveType =        app.Option("-wt|--wave-type", $"Optional values are ({String.Join('|',Enum.GetNames(typeof(Waves)))}). Defaults to {dpv.WaveType.ToString()}", CommandOptionType.SingleOrNoValue).Accepts(v => v.Enum<Waves>(ignoreCase: true));    
-            var optionIsNoisy =         app.Option("-n|--noisy", $"If flag is present, aberations in wave value will be output.", CommandOptionType.NoValue);    
-            var optionDuration =        app.Option("-d|--duration", $"Length of noise generation in seconds. If 'is noisy'. Defaults to {dpv.Duration} seconds ({(1/(dpv.Duration)).ToString("F3")} hz).", CommandOptionType.SingleOrNoValue);    
-            var optionStartValue =      app.Option("-v|--start", $"The start time in the wave for noise generation. Defaults to {dpv.Start}", CommandOptionType.SingleOrNoValue);    
-            var optionMinNoiseBound =   app.Option("-min|--min-noise-bound", $"The min aberant data value for noise. Defaults to {dpv.MinNoiseBound}", CommandOptionType.SingleOrNoValue);    
-            var optionMaxNoiseBound =   app.Option("-max|--max-noise-bound", $"The max aberant data value for noise. Defaults to {dpv.MaxNoiseBound}", CommandOptionType.SingleOrNoValue);    
+            var optionStandAlone    = app.Option("-sa|--stand-alone", "Enable Stand-Alone mode to run simulator outside of Azure IoT Edge", CommandOptionType.NoValue);
+            var optionSendData      = app.Option("-s|--send-data", "Enable sending of data", CommandOptionType.NoValue);    
+            var optionSendInterval  = app.Option("-si|--send-interval <INTERVAL>", $"The interval to send data. Defaults to {dpv.SendInterval} seconds.", CommandOptionType.SingleOrNoValue);
+            var optionFrequency     = app.Option("-f|--frequency", $"Frequency of wave measureing reading. Defaults to {dpv.Frequency} seconds ({(1/(dpv.Frequency)).ToString("F3")} hz).", CommandOptionType.SingleOrNoValue);
+            var optionAmplitude     = app.Option("-a|--amplitude", $"Amplitude of the wave.", CommandOptionType.SingleOrNoValue);    
+            var optionVerticalShift = app.Option("-vs|--vertical-shift", $"Positive or negative offset.", CommandOptionType.SingleOrNoValue);    
+            var optionWaveType      = app.Option("-wt|--wave-type", $"The type of wave data to generate. Optional values are ({String.Join('|',Enum.GetNames(typeof(Waves)))}). Defaults to {dpv.WaveType.ToString()}", CommandOptionType.SingleOrNoValue).Accepts(v => v.Enum<Waves>(ignoreCase: true));    
+            var optionIsNoisy       = app.Option("-n|--noisy", $"If flag is present, aberations in wave value will be output.", CommandOptionType.NoValue);    
+            var optionDuration      = app.Option("-d|--duration", $"Length of noise generation in seconds. If 'is noisy'. Defaults to {dpv.Duration} seconds ({(1/(dpv.Duration)).ToString("F3")} hz).", CommandOptionType.SingleOrNoValue);    
+            var optionStartValue    = app.Option("-v|--start", $"The start time in the wave for noise generation. Defaults to {dpv.Start}", CommandOptionType.SingleOrNoValue);    
+            var optionMinNoiseBound = app.Option("-min|--min-noise-bound", $"The min aberant data value for noise. Defaults to {dpv.MinNoiseBound}", CommandOptionType.SingleOrNoValue);    
+            var optionMaxNoiseBound = app.Option("-max|--max-noise-bound", $"The max aberant data value for noise. Defaults to {dpv.MaxNoiseBound}", CommandOptionType.SingleOrNoValue);    
             
             app.Command("dps-enroll", dpsCmd =>
             {
+
                 var pcs         = dpsCmd.Option("-p|--provisioning-connection-string","description", CommandOptionType.SingleValue).IsRequired();
-                var deviceId    = dpsCmd.Option("-d|--device-id", "", CommandOptionType.SingleValue).IsRequired();
-                var enabled     = dpsCmd.Option("-e|--enabled", "Set the provisioning status as enabled", CommandOptionType.SingleValue).Accepts(v => v.Enum<ProvisioningStatus>(ignoreCase: true));  
+                var deviceId    = dpsCmd.Option("-d|--device-id", "", CommandOptionType.SingleValue);
+                var enabled     = dpsCmd.Option("-e|--enabled", $"Set the provisioning status for the device. Optional values are ({String.Join('|',Enum.GetNames(typeof(ProvisioningStatus)))})", CommandOptionType.SingleValue).Accepts(v => v.Enum<ProvisioningStatus>(ignoreCase: true));  
                 var tpmkey      = dpsCmd.Option("-t|--tpm-endorsement-key", "Set a custom dps enrollment key", CommandOptionType.NoValue);
                 var regId       = dpsCmd.Option("-r|--registration-id", "Set a custom registration-id", CommandOptionType.NoValue);
                 
                 dpsCmd.OnExecute(async () => {
-                    var registrationId = "stable-wave-form-generator-registrationid";
+                    var registrationId = "sample-registrationid-csharp";
                     var tpmEndorsementKey =
                         "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj2gUS" +
-                        "cTk1UjioeTlfGYZrrimExB+bScH75adUMRIi2UOMxG1kw4y+9RW/IVoMl4e620VxZad0ARX2gUqVjYO7KPVt3d" +
+                        "cTk1UjuioeTlfGYZrrimExB+bScH75adUMRIi2UOMxG1kw4y+9RW/IVoMl4e620VxZad0ARX2gUqVjYO7KPVt3d" +
                         "yKhZS3dkcvfBisBhP1XH9B33VqHG9SHnbnQXdBUaCgKAfxome8UmBKfe+naTsE5fkvjb/do3/dD6l4sGBwFCnKR" +
                         "dln4XpM03zLpoHFao8zOwt8l/uP3qUIxmCYv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI6zQFOKF/rwsfBtFe" +
                         "WlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7dLIVPnlgZcBhgy1SSDQMQ==";
@@ -71,10 +72,10 @@ namespace WaveFormGeneratorModule
                     var sampleDeviceId = "stableWaveFormGenerator";    
                     await EnrollDPSDevice(
                         pcs.Value(),
-                        tpmkey.HasValue() ? tpmkey.Value() : tpmEndorsementKey,
-                        regId.HasValue() ? regId.Value() : registrationId,
+                        tpmkey.HasValue()   ? tpmkey.Value() : tpmEndorsementKey,
+                        regId.HasValue()    ? regId.Value() : registrationId,
                         deviceId.HasValue() ? deviceId.Value() : sampleDeviceId,
-                        enabled.HasValue() ? ((ProvisioningStatus)Enum.Parse(typeof(ProvisioningStatus), optionWaveType.Value())) : ProvisioningStatus.Enabled
+                        enabled.HasValue()  ? ((ProvisioningStatus)Enum.Parse(typeof(ProvisioningStatus), optionWaveType.Value())) : ProvisioningStatus.Enabled
                     );
 
                     return 1;
@@ -93,17 +94,17 @@ namespace WaveFormGeneratorModule
                     isEdgeModule = optionStandAlone.HasValue() ? false : true; 
 
                     desiredPropertiesData = new DesiredPropertiesData(
-                        optionSendData.HasValue() ? true: default,
-                        optionSendInterval.HasValue() ? double.Parse(optionSendInterval.Value()) : default,
-                        optionFrequency.HasValue() ? double.Parse(optionFrequency.Value()) : default,
-                        optionAmplitude.HasValue() ? double.Parse(optionAmplitude.Value()) : default,
-                        optionVerticalShift.HasValue() ? double.Parse(optionVerticalShift.Value()) : default,
-                        optionWaveType.HasValue() ? ((Waves)Enum.Parse(typeof(Waves), optionWaveType.Value())) : Waves.Sine,
-                        optionIsNoisy.HasValue() ? bool.Parse(optionIsNoisy.Value()) : default,
-                        optionDuration.HasValue() ? double.Parse(optionDuration.Value()) : default,
-                        optionStartValue.HasValue() ? double.Parse(optionStartValue.Value()) : default,
-                        optionMinNoiseBound.HasValue() ? double.Parse(optionMinNoiseBound.Value()) : default,
-                        optionMaxNoiseBound.HasValue() ? double.Parse(optionMaxNoiseBound.Value()) : default
+                        optionSendData.HasValue()       ? true                                                          : default,
+                        optionSendInterval.HasValue()   ? double.Parse(optionSendInterval.Value())                      : default,
+                        optionFrequency.HasValue()      ? double.Parse(optionFrequency.Value())                         : default,
+                        optionAmplitude.HasValue()      ? double.Parse(optionAmplitude.Value())                         : default,
+                        optionVerticalShift.HasValue()  ? double.Parse(optionVerticalShift.Value())                     : default,
+                        optionWaveType.HasValue()       ? ((Waves)Enum.Parse(typeof(Waves), optionWaveType.Value()))    : Waves.Sine,
+                        optionIsNoisy.HasValue()        ? bool.Parse(optionIsNoisy.Value())                             : default,
+                        optionDuration.HasValue()       ? double.Parse(optionDuration.Value())                          : default,
+                        optionStartValue.HasValue()     ? double.Parse(optionStartValue.Value())                        : default,
+                        optionMinNoiseBound.HasValue()  ? double.Parse(optionMinNoiseBound.Value())                     : default,
+                        optionMaxNoiseBound.HasValue()  ? double.Parse(optionMaxNoiseBound.Value())                     : default
                     );
 
                     simulatedWaveSensor = new SimulatedWaveSensor(desiredPropertiesData);
