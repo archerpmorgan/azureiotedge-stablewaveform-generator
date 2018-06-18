@@ -12,10 +12,10 @@ Below are the desired properties in Json used by the module:
       "VerticalShift": 0,
       "SendInterval": 0.05,
       "WaveType": "Sine",
+      "IsNoisy": false,
       "NoiseConfiguration": {
         "Start": 0,
         "Duration": 0,
-        "IsNoisy": false,
         "MinNoiseBound": 0,
         "MaxNoiseBound": 0
       }

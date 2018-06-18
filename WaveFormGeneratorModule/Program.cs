@@ -27,6 +27,7 @@ namespace WaveFormGeneratorModule
         static bool isEdgeModule;
         private static DesiredPropertiesData desiredPropertiesData;
         private static SimulatedWaveSensor simulatedWaveSensor;
+        private static DeviceClient ioTHubModuleClient;
 
         static int Main(string[] args)
         {
@@ -168,7 +169,7 @@ namespace WaveFormGeneratorModule
             ITransportSettings[] settings = { mqttSetting };
 
             // Open a connection to the Edge runtime
-            DeviceClient ioTHubModuleClient = DeviceClient.CreateFromConnectionString(connectionString, settings);
+            ioTHubModuleClient = DeviceClient.CreateFromConnectionString(connectionString, settings);
             await ioTHubModuleClient.OpenAsync();
             Console.WriteLine("IoT Hub module client initialized.");
 
@@ -182,8 +183,6 @@ namespace WaveFormGeneratorModule
             // Register callback to be called when a message is received by the module
                 await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", ControlMessageHandler, ioTHubModuleClient);
             }
-            // as this runs in a loop we don't await
-            await SendSimulationData(ioTHubModuleClient);
         }
 
 /* 
@@ -229,41 +228,27 @@ namespace WaveFormGeneratorModule
         }
 
 
-
-
-        private static async Task SendSimulationData(DeviceClient deviceClient)
+        // handles the newdata event from the sensor object by passing the data along
+        async void HandleNewData(object sender, NewDataArgs a){
+            await SendSimulationData(ioTHubModuleClient, a.readValue);
+        }
+        private static async Task SendSimulationData(DeviceClient deviceClient, double nextVal)
         {
-            while(true)
-            {
-                try
-                {
-                    if(desiredPropertiesData.SendData)
-                    {
-                        double nextVal = simulatedWaveSensor.ReadNext();
-                        MessageBody mb = buildMessage(desiredPropertiesData, nextVal);
-                        var messageString = JsonConvert.SerializeObject(mb);
-                        var messageBytes = Encoding.UTF8.GetBytes(messageString);
-                        var message = new Message(messageBytes);
-                        message.ContentEncoding = "utf-8"; 
-                        message.ContentType = "application/json"; 
+            MessageBody mb = buildMessage(desiredPropertiesData, nextVal);
+            var messageString = JsonConvert.SerializeObject(mb);
+            var messageBytes = Encoding.UTF8.GetBytes(messageString);
+            var message = new Message(messageBytes);
+            message.ContentEncoding = "utf-8"; 
+            message.ContentType = "application/json"; 
 
-                        if(isEdgeModule){
-                            await deviceClient.SendEventAsync("WaveForm", message);
-                        } else {
-                            await deviceClient.SendEventAsync(message);
-                        }
-
-                        Console.WriteLine($"\t{DateTime.UtcNow.ToShortDateString()} {DateTime.UtcNow.ToLongTimeString()}> Sending message: {counter}, Body: {messageString}");
-                        Interlocked.Increment(ref counter);
-                    }
-                    await Task.Delay(TimeSpan.FromSeconds(desiredPropertiesData.SendInterval));
-                }
-                catch(Exception ex)
-                {
-                    Console.WriteLine($"[ERROR] Unexpected Exception {ex.Message}" );
-                    Console.WriteLine($"\t{ex.ToString()}");
-                }
+            if(isEdgeModule){
+                await deviceClient.SendEventAsync("WaveForm", message);
+            } else {
+                await deviceClient.SendEventAsync(message);
             }
+
+            Console.WriteLine($"\t{DateTime.UtcNow.ToShortDateString()} {DateTime.UtcNow.ToLongTimeString()}> Sending message: {counter}, Body: {messageString}");
+            Interlocked.Increment(ref counter);
         }
 
         private static MessageBody buildMessage(DesiredPropertiesData dpd, double nextVal)
@@ -287,7 +272,7 @@ namespace WaveFormGeneratorModule
         {
             lock (PropsLocker){
                 desiredPropertiesData = new DesiredPropertiesData(twinCollection);
-                simulatedWaveSensor = new SimulatedWaveSensor(desiredPropertiesData);
+                simulatedWaveSensor.Config(desiredPropertiesData);
             }
             return Task.CompletedTask;
         }
