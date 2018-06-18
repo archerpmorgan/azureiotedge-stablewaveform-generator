@@ -148,16 +148,6 @@ namespace AzureIotEdgeSimulatedWaveSensor
             }
         }
     }
-} 
+}
 
-
-// possibly important stuff ripped out of program.cs
-
-            // while(true)
-            // {
-            //     try
-            //     {
-
-            // }
-                                // await Task.Delay(TimeSpan.FromSeconds(desiredPropertiesData.SendInterval));
 
