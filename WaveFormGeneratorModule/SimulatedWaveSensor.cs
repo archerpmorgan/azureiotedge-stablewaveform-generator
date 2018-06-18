@@ -83,7 +83,6 @@ namespace AzureIotEdgeSimulatedWaveSensor
             double b = (2 * Math.PI) / (1 / frequency);
                 return amplitude*Math.Sign(Math.Sin(b*x)) + verticalShift;
         }
-;
         //moves linearly from 0 to amplitude with a given period
         private double sawTooth(double x){
             return 2*(amplitude/period) * x - amplitude + verticalShift;

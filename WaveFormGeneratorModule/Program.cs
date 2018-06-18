@@ -17,7 +17,7 @@ using McMaster.Extensions.CommandLineUtils;
 using McMaster.Extensions.CommandLineUtils.Validation;
 using System.ComponentModel.DataAnnotations;
 
-namespace WaveFormGeneratorModule
+namespace AzureIotEdgeSimulatedWaveSensor
 {
 
     class Program
