@@ -1,9 +1,9 @@
 using System;
 
-namespace  AzureIotEdgeSimulatedWaveSensor {
+namespace WaveFormGenerator {
     interface ISimulatedSensor
     {
-        event EventHandler<NewDataArgs> NewData;
+        event EventHandler<NewDataArgs> NewDataEvent;
         void Config(DesiredPropertiesData data);
     }
 

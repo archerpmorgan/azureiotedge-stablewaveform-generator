@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2018
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveFormGenerator", "WaveFormGenerator\WaveFormGenerator.csproj", "{25DC6F13-2885-47DA-B3AB-ED123B3C89E5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WaveFormGeneratorModule", "..\WaveFormGeneratorModule\WaveFormGeneratorModule.csproj", "{752E6EB6-2863-4D3F-8C15-7029BC4B6FF3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{25DC6F13-2885-47DA-B3AB-ED123B3C89E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25DC6F13-2885-47DA-B3AB-ED123B3C89E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25DC6F13-2885-47DA-B3AB-ED123B3C89E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25DC6F13-2885-47DA-B3AB-ED123B3C89E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{752E6EB6-2863-4D3F-8C15-7029BC4B6FF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{752E6EB6-2863-4D3F-8C15-7029BC4B6FF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{752E6EB6-2863-4D3F-8C15-7029BC4B6FF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{752E6EB6-2863-4D3F-8C15-7029BC4B6FF3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {73019A7E-D55B-411A-A6D9-5AD4A2B7421C}
+	EndGlobalSection
+EndGlobal
