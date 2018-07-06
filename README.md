@@ -1,5 +1,28 @@
 # Simulated Wave Form Generator for IoT Edge
 
+This project is a stable wave form generator to be used for general IoT data generation.  Key scenarios for this generator include Machine Learning, Predictive Maintenance & Remote Monitoring.  This module has several forms of deployment including: console application, IoT Edge Module, Containerized Console and as a reference library (Nuget package).  
+
+## Wave Form
+This application generates four (4) standtard wave forms including 
+- Sine (default)
+- Square
+- Triangular
+- Sawtooth
+
+## Configuration
+The application/library's wave functions are parameterized by a number of values:
+- frequency: the length of a single wave in seconds.
+- amplitude: the measure of the waves center line to it's peak value.
+- vertical shift: the positive or negative offset from 0, along the y-axis, to offset the wave.
+- send interval: the frequency to read values from the wave function. This value determines the output velocity.
+- wave type: see [wave forms](#wave-forms) above.   
+
+## Noise
+The application/library supports the injection of noise into the stable wave form to simulate triggers for machine learning or predictive maintanence models.  Noise is controlled by the IoT Edge Module's Device Twin or via console args.  Noise is specified via: 
+- start period: time value from the start of a wave. 
+- duration: the length of noise to generate.
+- min noise bound: the lower threshold of random noise generation.
+- max noise bound: the upper threshold of random noise generation. 
 
 Below are the desired properties in Json used by the module:
 

@@ -1,9 +1,7 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +14,7 @@ using AzureIotEdgeSimulatedWaveSensor;
 using McMaster.Extensions.CommandLineUtils;
 using McMaster.Extensions.CommandLineUtils.Validation;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Service;
 
 namespace WaveFormGeneratorModule
@@ -114,8 +113,7 @@ namespace WaveFormGeneratorModule
 
                 // Cert verification is not yet fully functional when using Windows OS for the container
                 bool bypassCertVerification = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-                if (!bypassCertVerification) InstallCert();
-                await Init(connectionString, bypassCertVerification);
+                await Init();
 
                 // Wait until the app unloads or is cancelled
                 var cts = new CancellationTokenSource();
@@ -129,12 +127,6 @@ namespace WaveFormGeneratorModule
             
         }
 
-
-
-
-
-
-
         /// <summary>
         /// Handles cleanup operations when app is cancelled or unloads
         /// </summary>
@@ -146,64 +138,17 @@ namespace WaveFormGeneratorModule
         }
 
 
-
-
-
-
-
-
-
-        /// <summary>
-        /// Add certificate in local cert store for use by client for secure connection to IoT Edge runtime
-        /// </summary>
-        static void InstallCert()
-        {
-            string certPath = Environment.GetEnvironmentVariable("EdgeModuleCACertificateFile");
-            if (string.IsNullOrWhiteSpace(certPath))
-            {
-                // We cannot proceed further without a proper cert file
-                Console.WriteLine($"Missing path to certificate collection file: {certPath}");
-                throw new InvalidOperationException("Missing path to certificate file.");
-            }
-            else if (!File.Exists(certPath))
-            {
-                // We cannot proceed further without a proper cert file
-                Console.WriteLine($"Missing path to certificate collection file: {certPath}");
-                throw new InvalidOperationException("Missing certificate file.");
-            }
-            X509Store store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
-            store.Open(OpenFlags.ReadWrite);
-            store.Add(new X509Certificate2(X509Certificate2.CreateFromCertFile(certPath)));
-            Console.WriteLine("Added Cert: " + certPath);
-            store.Close();
-        }
-
-
-
-
-
-
-
-
-
         /// <summary>
         /// Initializes the DeviceClient and sets up the callback to receive
         /// messages containing temperature information
         /// </summary>
-        static async Task Init(string connectionString, bool bypassCertVerification = false)
+        static async Task Init()
         {
-            Console.WriteLine("Connection String {0}", connectionString);
-
             MqttTransportSettings mqttSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
-            // During dev you might want to bypass the cert verification. It is highly recommended to verify certs systematically in production
-            if (bypassCertVerification)
-            {
-                mqttSetting.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
-            }
             ITransportSettings[] settings = { mqttSetting };
 
             // Open a connection to the Edge runtime
-            DeviceClient ioTHubModuleClient = DeviceClient.CreateFromConnectionString(connectionString, settings);
+            var ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
             await ioTHubModuleClient.OpenAsync();
             Console.WriteLine("IoT Hub module client initialized.");
 
@@ -266,7 +211,7 @@ namespace WaveFormGeneratorModule
 
 
 
-        private static async Task SendSimulationData(DeviceClient deviceClient)
+        private static async Task SendSimulationData(ModuleClient deviceClient)
         {
             while(true)
             {
@@ -349,6 +294,7 @@ namespace WaveFormGeneratorModule
 
                 individualEnrollment.DeviceId = deviceId;
                 individualEnrollment.ProvisioningStatus = provisioningStatus;
+                individualEnrollment.ETag = "*";
 
                 // create the enrollment
                 Console.WriteLine("\nAdding new individualEnrollment...");
